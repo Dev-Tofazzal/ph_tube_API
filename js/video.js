@@ -1,15 +1,15 @@
 // extra function part start here
-function getTimeString(time){
-    const hour = parseInt(time/3600);
+function getTimeString(time) {
+    const hour = parseInt(time / 3600);
     let remainingSecond = time % 3600;
-    const minute = parseInt(remainingSecond/60);
-    remainingSecond = remainingSecond % 60 ;
+    const minute = parseInt(remainingSecond / 60);
+    remainingSecond = remainingSecond % 60;
     return `${hour} hour ${minute} minute ${remainingSecond} Second ago`
 }
 
-const activeBtnRemove =()=>{
+const activeBtnRemove = () => {
     const buttons = document.getElementsByClassName("category_btn")
-    for(let btn of buttons){
+    for (let btn of buttons) {
         btn.classList.remove("active")
     }
 }
@@ -31,13 +31,13 @@ const displayCategories = (categories) => {
 
         // create a button 
         const buttonContainer = document.createElement("div")
-        buttonContainer.innerHTML = 
-        `<button id="btn-${item.category_id}" onclick="loadCategoryVideos(${item.category_id})" class="btn category_btn">
+        buttonContainer.innerHTML =
+            `<button id="btn-${item.category_id}" onclick="loadCategoryVideos(${item.category_id})" class="btn category_btn">
             ${item.category}
          </button>
         `
 
-      
+
 
         // add button a category container 
 
@@ -49,30 +49,45 @@ const displayCategories = (categories) => {
 
 // load video part start here
 
-const loadVideos = () => {
-    fetch("https://openapi.programming-hero.com/api/phero-tube/videos")
+const loadVideos = (searchText="") => {
+    fetch(`https://openapi.programming-hero.com/api/phero-tube/videos?title=${searchText}`)
         .then(res => res.json())
         .then(data => displayVideos(data.videos))
         .catch(error => console.log(error))
 
 }
 
-const loadCategoryVideos = (id) =>{
-    
-    fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
-    .then(res => res.json())
-    .then(data =>{
-        // remove active class
-        activeBtnRemove()
+const loadCategoryVideos = (id) => {
 
-        // add active class
-        const activeBtn = document.getElementById(`btn-${id}`)
-        activeBtn.classList.add("active")
-        displayVideos(data.category)
-    })
-    .catch(error => console.log(error))
+    fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
+        .then(res => res.json())
+        .then(data => {
+            // remove active class
+            activeBtnRemove()
+
+            // add active class
+            const activeBtn = document.getElementById(`btn-${id}`)
+            activeBtn.classList.add("active")
+            displayVideos(data.category)
+        })
+        .catch(error => console.log(error))
 }
 
+const loadDetails =async (videoId)=>{
+    const url= `https://openapi.programming-hero.com/api/phero-tube/video/${videoId}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    displayDetails(data.video)
+}
+
+const displayDetails = (video)=>{
+  const detailsContainer = document.getElementById("modal_content");
+  detailsContainer.innerHTML = `
+  <img src=${video.thumbnail}/>
+  <p>${video.description}</p>
+  `
+  document.getElementById("showModalData").click();
+}
 
 
 const displayVideos = (videos) => {
@@ -80,7 +95,7 @@ const displayVideos = (videos) => {
     const videosContainer = document.getElementById("videos");
     videosContainer.innerHTML = ""
 
-    if(videos.length === 0){
+    if (videos.length === 0) {
         videosContainer.classList.remove("grid")
         videosContainer.innerHTML = `
         <div class="min-h-[300px] flex flex-col gap-5 justify-center items-center">
@@ -91,8 +106,7 @@ const displayVideos = (videos) => {
         </div>
         `;
         return;
-    }
-    else{
+    } else {
         videosContainer.classList.add("grid");
     }
 
@@ -101,7 +115,7 @@ const displayVideos = (videos) => {
         const videoCard = document.createElement("div");
         videoCard.classList = "card card-compact "
         videoCard.innerHTML =
-        `
+            `
         <figure class="h-[200px] relative">
             <img
             src=${video.thumbnail}
@@ -120,10 +134,14 @@ const displayVideos = (videos) => {
                 <h2 class="font-bold">${video.title}</h2>
                 <div class="flex items-center gap-2">
                     <p class="text-gray-400">${video.authors[0].profile_name}</p>
-                    ${video.authors[0].verified === true ? ` <img class="w-7 h-7" src="https://img.icons8.com/?size=48&id=98A4yZTt9abw&format=png"/>` : "" }
+                    
+                    ${video.authors[0].verified === true 
+                        ? ` <img class="w-7 h-7" src="https://img.icons8.com/?size=48&id=98A4yZTt9abw&format=png"/>` : "" }
                    
                 </div>
-                <p></p>
+
+                <p><button onclick="loadDetails('${video.video_id}')" class="btn btn-sm btn-error">Details</button></p>
+
             </div>
         </div>
         `;
@@ -137,7 +155,9 @@ const displayVideos = (videos) => {
 
 // video part end here
 
-
+document.getElementById("searchInput").addEventListener("keyup",(event)=>{
+    loadVideos(event.target.value)
+})
 
 loadCategories()
 

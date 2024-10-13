@@ -99,7 +99,7 @@ const displayVideos = (videos) => {
         videosContainer.classList.remove("grid")
         videosContainer.innerHTML = `
         <div class="min-h-[300px] flex flex-col gap-5 justify-center items-center">
-            <img src="../assets/icon.png"/>
+            <img src="/ph_tube_API/assets/icon.png"/>
             <h2 class="text-center text-xl font-bold" >
             No Content Here in this Category
             </h2>
